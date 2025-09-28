@@ -1,33 +1,23 @@
 {
-    "configurations": [
-        {
-            "type": "cppvsdbg",
-            "request": "launch",
-            "name": "Build ASM",
-            "preLaunchTask": "CMake: configure and build",
-
-            "cwd": "${workspaceRoot}",
-            "program": "${workspaceRoot}/out/debug/${fileWorkspaceFolderBasename}",
-            "console": "integratedTerminal",
-            "args": [
-                "asm",
-                "build",
-                "test.ms"
-            ]
-        },
-        {
-            "type": "cppvsdbg",
-            "request": "launch",
-            "name": "Test ASM",
-            "preLaunchTask": "CMake: configure and build",
-
-            "cwd": "${workspaceRoot}",
-            "program": "${workspaceRoot}/out/debug/${fileWorkspaceFolderBasename}",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "test.maple"
-            ]
-        },
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Test",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/build/tests/${input:testName}.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [],
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testName",
+      "type": "promptString",
+      "description": "Test Name",
+      "default": "default",
+    }
+  ]
 }
