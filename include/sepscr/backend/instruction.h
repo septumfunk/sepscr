@@ -2,10 +2,30 @@
 #define SS_INSTRUCTION_H
 
 #include "value.h"
+#include <string.h>
 
 #define SS_BYTECODE_VERSION 0x01, 0x01, 0x00
 #define SS_UNIT_HEADER { 'S', 'S', SS_BYTECODE_VERSION }
-#define ss_operand(type) (*(type *)((state->ip += sizeof(type)) - sizeof(type)))
+
+static inline ss_integer ss_integer_get(uint8_t *ip) {
+    ss_integer val;
+    memcpy(&val, ip, sizeof(ss_integer));
+    return val;
+}
+
+static inline ss_byte ss_byte_get(uint8_t *ip) {
+    ss_byte val;
+    memcpy(&val, ip, sizeof(ss_byte));
+    return val;
+}
+
+static inline ss_number ss_number_get(uint8_t *ip) {
+    ss_number val;
+    memcpy(&val, ip, sizeof(ss_number));
+    return val;
+}
+
+#define ss_operand(type) type##_get((state->ip += sizeof(type)) - sizeof(type))
 
 typedef enum {
     SS_OP_NOOP,

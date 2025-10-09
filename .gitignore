@@ -2,3 +2,4 @@ build/
 .cache/
 *.exe
 *.o
+compile_commands.json

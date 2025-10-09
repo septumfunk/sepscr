@@ -22,6 +22,9 @@ ss_unit ss_unit_new(void) {
 
 void ss_unit_free(ss_unit *self) {
     ss_bytevec_free(&self->bytecode);
+    for (size_t i = 0; i < self->constants.count; ++i)
+        if (self->constants.data[i].tt == SS_PRIMITIVE_POINTER)
+            free(self->constants.data[i].value.pointer);
     ss_constvec_free(&self->constants);
     ss_dbgvec_free(&self->dbg_chunks);
 }

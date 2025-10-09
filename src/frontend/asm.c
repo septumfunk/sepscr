@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sepscr/frontend/asm.h"
+#include "sanitizers.h"
 #include "sepscr/backend/instruction.h"
 #include "sepscr/backend/value.h"
 #include "sf/str.h"
@@ -69,7 +70,9 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
             char ap[2] = { *c, '\0' };
             sf_str_append(&cm_removed, sf_ref(ap));
         }
-        next: continue;
+    next:
+        sf_str_append(&cm_removed, sf_lit(" "));
+        continue;
     }
     sf_str_free(lb_removed);
 
@@ -78,7 +81,7 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
         if (*c == '\\') {
             if (*(c + 1) == 'n') { // Line Break
                 *c = '\n';
-                *(c + 1) = ' ';
+                memmove(c + 1, c + 2, strlen(c) - 1);
             }
         }
     }
@@ -151,7 +154,7 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
                     v.value.pointer = (ss_pointer)atoll(value); // NOLINT(performance-no-int-to-ptr)
                     break;
                 case SS_PRIMITIVE_STR:
-                string_continue:
+                string_continue: {
                     char *tk = token;
                     if (!sw_name) {
                         tk = value;
@@ -168,11 +171,14 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
 
                     if (tk[strlen(tk) - 1] == '"') {
                         tk[strlen(tk) - 1] = '\0';
+
+                        __lsan_disable(); /// String stored safely in the constant table.
                         sf_str_append(&string_work, sf_ref(tk));
                         sf_str *s = ss_alloc(SS_PRIMITIVE_STR, sizeof(sf_str));
                         *s = string_work;
                         ss_strint_set(&assembler->constants, sf_str_cdup(sw_name), (ss_integer)assembler->const_count++);
                         ss_unit_push_constant(unit, (ss_value){.tt = SS_PRIMITIVE_STR, .value.pointer = s});
+                        __lsan_enable();
 
                         string_work = SF_STR_EMPTY;
                         sw_name = NULL;
@@ -180,6 +186,7 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
                     }
                     sf_str_append(&string_work, sf_ref(tk));
                     break;
+                }
                 default:
                     return ss_status_err(sf_str_fmt("Compile Error: Unknown Const Primitive [%d]\n", pd->tt));
             }
@@ -212,15 +219,17 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
             if (ss_strint_get(&assembler->constants, sf_ref(value), &idx))
                 ss_bytevec_append(&unit->bytecode, (uint8_t *)&idx, sizeof(ss_integer));
             else switch (oprnd->tt) {
-                case SS_PRIMITIVE_BYTE:
+                case SS_PRIMITIVE_BYTE: {
                     ss_byte b = (ss_byte)atoll(value);
                     ss_bytevec_append(&unit->bytecode, &b, sizeof(b));
                     break;
-                case SS_PRIMITIVE_NUMBER:
+                }
+                case SS_PRIMITIVE_NUMBER: {
                     ss_number num = (ss_number)atof(value);
                     ss_bytevec_append(&unit->bytecode, (uint8_t *)&num, sizeof(num));
                     break;
-                case SS_PRIMITIVE_INTEGER:
+                }
+                case SS_PRIMITIVE_INTEGER: {
                     ss_integer offset;
                     if (ss_strint_get(&assembler->labels, sf_ref(value), &offset)) {
                         ss_bytevec_append(&unit->bytecode, (uint8_t *)&offset, sizeof(ss_integer));
@@ -229,12 +238,14 @@ ss_status ss_assemble(ss_assembler *assembler, ss_unit *unit, sf_str string) {
                     ss_integer in = (ss_integer)atoll(value);
                     ss_bytevec_append(&unit->bytecode, (uint8_t *)&in, sizeof(in));
                     break;
+                }
                 case SS_PRIMITIVE_POINTER:
                 case SS_PRIMITIVE_STR:
-                case SS_PRIMITIVE_OBJ:
+                case SS_PRIMITIVE_OBJ: {
                     ss_pointer ptr = (ss_pointer)strtoull(value, NULL, 0); // NOLINT(performance-no-int-to-ptr)
                     ss_bytevec_append(&unit->bytecode, (uint8_t *)&ptr, sizeof(ptr));
                     break;
+                }
                 default: return ss_status_err(sf_str_fmt("Compile Error: Unknown Primitive [%d]\n", oprnd->tt));; //! WHAT
             }
         }

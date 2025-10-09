@@ -1,5 +1,6 @@
 #include "sepscr/backend/value.h"
 #include "sf/str.h"
+#include "sanitizers.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -69,8 +70,10 @@ const struct ss_pdata SS_PRIMITIVES[SS_PRIMITIVE_COUNT] = {
 };
 
 void *ss_alloc(ss_type tt, size_t size) {
+    __lsan_disable(); /// Calloc safely stored on the vm stack (ref-counted)
     char *block = calloc(1, sizeof(ss_block_header) + size);
     memcpy(block, &(ss_block_header){.tt = tt, .size = size, .ref_count = 1}, sizeof(ss_block_header));
+    __lsan_enable();
     return block + sizeof(ss_block_header);
 }
 

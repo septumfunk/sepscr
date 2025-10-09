@@ -21,6 +21,23 @@ add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+option(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+if (ENABLE_SANITIZERS AND NOT MSVC)
+    message(STATUS "Sanitizers enabled")
+    set(SANITIZER_FLAGS
+        -fsanitize=address
+        -fsanitize=undefined
+        -fsanitize=leak
+        -fno-omit-frame-pointer
+        -g
+    )
+    target_compile_options(${PROJECT_NAME} PUBLIC ${SANITIZER_FLAGS})
+    target_link_options(${PROJECT_NAME} PUBLIC ${SANITIZER_FLAGS})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC USE_SANITIZERS)
+    set(SANITIZER_COMPILE_FLAGS ${SANITIZER_FLAGS})
+    set(SANITIZER_DEFINE USE_SANITIZERS)
+endif()
+
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 if (MSVC)
     set(COMPILE_OPTIONS /W4 /WX /permissive- /sdl /wd4068)
@@ -60,6 +77,11 @@ foreach(TEST_SRC ${TEST_SRCS})
     add_executable(${TEST_NAME} ${TEST_SRC})
     target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME})
     target_compile_options(${TEST_NAME} PUBLIC ${COMPILE_OPTIONS})
+    if (ENABLE_SANITIZERS AND NOT MSVC)
+        target_compile_options(${TEST_NAME} PUBLIC ${SANITIZER_COMPILE_FLAGS})
+        target_link_options(${TEST_NAME} PUBLIC ${SANITIZER_COMPILE_FLAGS})
+        target_compile_definitions(${TEST_NAME} PUBLIC ${SANITIZER_DEFINE})
+    endif()
     set_target_properties(${TEST_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
     )

@@ -32,4 +32,7 @@ int main(void) {
 
     ss_state_delete(state);
     ss_unit_free(&unit);
+
+    free(f);
+    
 }

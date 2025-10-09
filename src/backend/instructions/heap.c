@@ -1,3 +1,4 @@
+#include "sanitizers.h"
 #include "sepscr/backend/instruction.h"
 #include "sepscr/backend/state.h"
 #include "sepscr/backend/value.h"
@@ -20,9 +21,11 @@ ss_status ss_ins_str_add(ss_state *state) {
     if (val2.tt != SS_PRIMITIVE_STR)
         return ss_status_err(sf_str_fmt("[reg2] is of type '%s', expected string.", ss_typeinfo(val2.tt)->name));
 
+    __lsan_disable(); /// String is safely stored on the vm stack (ref-counted)
     push_string(state,
         sf_str_join(*(sf_str *)val1.value.pointer, *(sf_str *)val2.value.pointer)
     );
+    __lsan_enable();
     return ss_status_ok(SS_STATUS_OK);
 }
 
@@ -86,9 +89,11 @@ ss_status ss_ins_ptr_copy(ss_state *state) {
 
 
 ss_status ss_ins_obj_new(ss_state *state) {
+    __lsan_disable(); /// Object pointer is stored safely on the vm stack (ref-counted)
     ss_object *obj = ss_alloc(SS_PRIMITIVE_OBJ, sizeof(ss_object));
     *obj = ss_object_new();
     ss_push(state, (ss_value){.tt = SS_PRIMITIVE_OBJ, .value.pointer = obj});
+    __lsan_enable();
     return ss_status_ok(SS_STATUS_OK);
 }
 

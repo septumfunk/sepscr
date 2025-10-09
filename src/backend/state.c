@@ -26,6 +26,7 @@ void ss_state_delete(ss_state *state) {
     if (state->unit)
         ss_unit_free(state->unit);
     ss_stack_free(&state->stack);
+    free(state);
 }
 
 void ss_push(ss_state *state, ss_value value) {
