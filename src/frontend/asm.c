@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sepscr/frontend/asm.h"
-#include "sanitizers.h"
 #include "sepscr/backend/instruction.h"
 #include "sepscr/backend/value.h"
 #include "sf/str.h"
