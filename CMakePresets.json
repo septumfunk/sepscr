@@ -7,17 +7,17 @@
 
   "configurePresets": [
     {
-      "name": "debug-linux-llvm",
-      "displayName": "Debug (Linux+LLVM)",
+      "name": "debug-llvm",
+      "displayName": "Debug (LLVM)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang"
       }
     },
     {
-      "name": "sanitized-linux-llvm",
+      "name": "sanitized-llvm",
       "displayName": "Debug+Sanitizers (Linux+LLVM)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/sanitized",
@@ -29,17 +29,17 @@
     },
 
     {
-      "name": "debug-linux-gnu",
+      "name": "debug-gnu",
       "displayName": "Debug (Linux+GNU)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc"
       }
     },
     {
-      "name": "sanitized-linux-gnu",
+      "name": "sanitized-gnu",
       "displayName": "Debug+Sanitizers (Linux+GNU)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/sanitized",
@@ -54,7 +54,7 @@
       "name": "debug-default",
       "displayName": "Debug (Default Compiler)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }

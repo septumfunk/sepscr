@@ -5,7 +5,7 @@
       "name": "Debug Test (Windows)",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/build/debug/tests/${input:testName}.exe",
+      "program": "${workspaceRoot}/build/tests/${input:testName}.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -15,7 +15,7 @@
       "name": "Debug Test (Linux)",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceRoot}/build/debug/tests/${input:testName}",
+      "program": "${workspaceRoot}/build/tests/${input:testName}",
       "args": [],
       "cwd": "${workspaceRoot}",
       "env": {
